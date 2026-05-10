@@ -1,0 +1,978 @@
+
+		<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareSense AI | Clinical Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --medical-blue: #0ea5e9;
+            --medical-green: #10b981;
+            --hospital-white: #f8fafc;
+            --dark-clinical: #0f172a;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background: #f1f5f9;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+            min-height: 100vh;
+            color: var(--dark-clinical);
+            padding-bottom: 50px;
+        }
+
+        /* --- Medical EKG Background Decor --- */
+        .ekg-line {
+            position: fixed;
+            top: 150px;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* --- Header / Navbar --- */
+        header {
+            position: sticky;
+            top: 0;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border-bottom: 2px solid var(--medical-blue);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        .logo-box { display: flex; align-items: center; gap: 15px; }
+        .pulse-icon {
+            font-size: 2.2rem;
+            color: var(--medical-blue);
+            animation: heartBeat 1.5s infinite;
+        }
+
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.1); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.1); }
+            70% { transform: scale(1); }
+        }
+
+        .logo-box h1 { font-weight: 800; font-size: 1.6rem; color: var(--dark-clinical); }
+        .logo-box span { color: var(--medical-blue); }
+
+        /* --- Main Dashboard Container --- */
+        .dashboard {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* --- Patient Identity Section --- */
+        .identity-bar {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* --- Card Styling --- */
+        .med-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .med-card::before {
+            content: "\f0f1"; /* Stethoscope icon */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            font-size: 8rem;
+            opacity: 0.03;
+            transform: rotate(-15deg);
+        }
+
+        h2.section-title {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--medical-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- Form Grid --- */
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .field { display: flex; flex-direction: column; gap: 8px; }
+        .field label { font-size: 0.85rem; font-weight: 700; color: #64748b; }
+        
+        .field-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .field-input-wrapper i {
+            position: absolute;
+            left: 15px;
+            color: var(--medical-blue);
+        }
+
+        .field input {
+            width: 100%;
+            padding: 14px 14px 14px 45px;
+            border-radius: 12px;
+            border: 2px solid #f1f5f9;
+            background: #f8fafc;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .field input:focus {
+            border-color: var(--medical-blue);
+            background: white;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+        }
+
+        /* --- Validation Message --- */
+        #error-msg {
+            background: #fff1f2;
+            color: #e11d48;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid #fda4af;
+        }
+
+        /* --- Action Button --- */
+        .action-area { margin-top: 30px; }
+        .predict-btn {
+            width: 100%;
+            padding: 20px;
+            border-radius: 15px;
+            border: none;
+            background: linear-gradient(135deg, var(--medical-blue), #0284c7);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(14, 165, 233, 0.3);
+        }
+
+        /* --- Results Panel --- */
+        #results-area {
+            margin-top: 40px;
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .res-card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            border-top: 5px solid var(--medical-blue);
+            box-shadow: var(--shadow);
+        }
+
+        .res-label { font-size: 0.9rem; color: #64748b; margin-bottom: 10px; }
+        .res-value { font-size: 2rem; font-weight: 800; }
+
+        .status-pill {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
+        /* Loading Animation */
+        .loader {
+            display: none;
+            width: 30px;
+            height: 30px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .identity-bar { grid-template-columns: 1fr; }
+            header { flex-direction: column; text-align: center; gap: 10px; }
+        }
+	/* ============================= */
+/* DASHBOARD ANALYTICS SECTION */
+/* ============================= */
+
+.top-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+    border-left: 6px solid var(--medical-blue);
+}
+
+.stat-card h3 {
+    font-size: 0.95rem;
+    color: #64748b;
+    margin-bottom: 10px;
+}
+
+.stat-card .stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--dark-clinical);
+}
+
+.stat-card i {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-size: 2rem;
+    opacity: 0.15;
+    color: var(--medical-blue);
+}
+
+/* ============================= */
+/* AI DOCTOR PANEL */
+/* ============================= */
+
+.ai-doctor-panel {
+    margin-top: 30px;
+    background: white;
+    border-radius: 25px;
+    padding: 30px;
+    box-shadow: var(--shadow);
+    display: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-doctor-panel::before{
+    content: "";
+    position: absolute;
+    width: 250px;
+    height: 250px;
+    background: rgba(14,165,233,0.05);
+    border-radius: 50%;
+    top: -80px;
+    right: -80px;
+}
+
+.ai-title{
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--medical-blue);
+    margin-bottom: 20px;
+}
+
+.remark-box{
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 15px;
+    line-height: 1.7;
+    color: #334155;
+    border-left: 5px solid var(--medical-blue);
+}
+
+/* ============================= */
+/* AI STAMP */
+/* ============================= */
+
+.ai-stamp{
+    margin-top: 30px;
+    border: 3px dashed #10b981;
+    color: #10b981;
+    width: fit-content;
+    padding: 15px 25px;
+    border-radius: 50%;
+    font-weight: 800;
+    transform: rotate(-10deg);
+    font-size: 1rem;
+}
+
+/* ============================= */
+/* SIGNATURE */
+/* ============================= */
+
+.signature-box{
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.signature{
+    font-family: cursive;
+    font-size: 2rem;
+    color: var(--dark-clinical);
+}
+
+.signature-role{
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.download-btn{
+    margin-top: 20px;
+    background: var(--medical-green);
+    color: white;
+    border: none;
+    padding: 14px 25px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: 0.3s;
+}
+
+.download-btn:hover{
+    transform: translateY(-2px);
+}
+@media print {
+
+    body * {
+        visibility: hidden;
+    }
+
+    #doctorPanel,
+    #doctorPanel * {
+        visibility: visible;
+    }
+
+    #doctorPanel {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+
+    .download-btn {
+        display: none;
+    }
+
+}
+    </style>
+</head>
+<body>
+
+    <svg class="ekg-line" viewBox="0 0 1000 100">
+        <path d="M0,50 L200,50 L210,40 L220,60 L230,20 L245,80 L260,50 L400,50 L410,10 L425,90 L440,50 L1000,50" 
+              fill="none" stroke="#0ea5e9" stroke-width="2"/>
+    </svg>
+
+    <header>
+        <div class="logo-box">
+            <i class="fa-solid fa-heart-pulse pulse-icon"></i>
+            <div>
+                <h1>CareSense<span>AI</span></h1>
+            </div>
+        </div>
+        <p style="font-weight: 600; font-size: 0.9rem; color: var(--medical-blue)">
+            <i class="fa-solid fa-shield-virus"></i> Clinical Support System
+        </p>
+    </header>
+
+    <div class="dashboard">
+        <div id="error-msg">Please fill all required fields to proceed with AI analysis.</div>
+	<!-- ============================= -->
+<!-- TOP ANALYTICS CARDS -->
+<!-- ============================= -->
+
+<div class="top-stats">
+    <div class="stat-card" style="grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+            <h3>Total Patients in Database</h3>
+            <div class="stat-number" id="totalPatients">0</div>
+        </div>
+        <i class="fa-solid fa-server" style="position: static; opacity: 0.2; font-size: 3rem; color: #0ea5e9;"></i>
+    </div>
+</div>
+        <form id="main-form">
+            <!-- Patient Identification -->
+            <div class="identity-bar">
+                <div class="med-card">
+                    <h2 class="section-title"><i class="fa-solid fa-id-card"></i> Patient Identification</h2>
+                    <div class="input-grid">
+                        <div class="field">
+                            <label>Full Patient Name</label>
+                            <div class="field-input-wrapper">
+                                <i class="fa-solid fa-user-injured"></i>
+                                <input type="text" id="pName" placeholder="Enter name..." required>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Patient ID / MRN</label>
+                            <div class="field-input-wrapper">
+                                <i class="fa-solid fa-fingerprint"></i>
+                                <input type="text" id="pID" placeholder="e.g. MRN-9920" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Info -->
+                <div class="med-card" style="background: var(--dark-clinical); color: white;">
+                    <h2 class="section-title" style="color: white; opacity: 0.8;"><i class="fa-solid fa-circle-info"></i> Our Goal</h2>
+                    <p style="font-weight: 300; font-size: 1.1rem; line-height: 1.4;">
+                        Predicting Patient Risk <br><strong>Before It Becomes Critical.</strong>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Vitals Grid -->
+            <div class="med-card">
+                <h2 class="section-title"><i class="fa-solid fa-stethoscope"></i> Clinical Vitals & Parameters</h2>
+                <div class="input-grid">
+                    <div class="field">
+                        <label>Heart Rate (BPM)</label>
+                        <div class="field-input-wrapper">
+                            <i class="fa-solid fa-heart"></i>
+                            <input type="number" id="hr" placeholder="72" required>
+                        </div>
+                    </div>
+                   <!-- NEW BP SECTION (Systolic + Diastolic) -->
+<div class="field">
+    <label>Blood Pressure - Systolic (mmHg)</label>
+    <div class="field-input-wrapper">
+        <i class="fa-solid fa-arrow-up"></i>
+        <input type="number" id="bp_sys" placeholder="120" required>
+    </div>
+</div>
+
+<div class="field">
+    <label>Blood Pressure - Diastolic (mmHg)</label>
+    <div class="field-input-wrapper">
+        <i class="fa-solid fa-arrow-down"></i>
+        <input type="number" id="bp_dia" placeholder="80" required>
+    </div>
+</div>
+                    <div class="field">
+                        <label>Temperature (°C)</label>
+                        <div class="field-input-wrapper">
+                            <i class="fa-solid fa-thermometer"></i>
+                            <input type="number" step="0.1" id="temp" placeholder="37.0" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>SpO2 (%)</label>
+                        <div class="field-input-wrapper">
+                            <i class="fa-solid fa-lungs"></i>
+                            <input type="number" id="oxy" placeholder="98" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Respiratory Rate</label>
+                        <div class="field-input-wrapper">
+                            <i class="fa-solid fa-wind"></i>
+                            <input type="number" id="resp" placeholder="16" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Patient Age</label>
+                        <div class="field-input-wrapper">
+                            <i class="fa-solid fa-cake-candles"></i>
+                            <input type="number" id="age" placeholder="Age" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Hospital Stay (Days)</label>
+                        <div class="field-input-wrapper">
+                            <i class="fa-solid fa-bed"></i>
+                            <input type="number" id="stay" placeholder="Days" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Previous Admissions</label>
+                        <div class="field-input-wrapper">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <input type="number" id="history" placeholder="Count" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-area">
+                    <button type="button" class="predict-btn" onclick="analyzeData()">
+                        <span id="btn-text">RUN AI DIAGNOSTIC</span>
+                        <div class="loader" id="loader"></div>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Results Display -->
+        <div id="results-area">
+            <div class="res-card">
+                <div class="res-label">CRITICAL EMERGENCY RISK</div>
+                <div id="risk-val" class="res-value">--</div>
+                <div id="risk-pill" class="status-pill">--</div>
+            </div>
+            <div class="res-card">
+                <div class="res-label">ICU ADMISSION PREDICTION</div>
+                <div id="icu-val" class="res-value">--</div>
+                <div id="icu-icon" style="font-size: 2rem; margin-top: 10px;"></div>
+            </div>
+            <div class="res-card">
+                <div class="res-label">READMISSION PROBABILITY</div>
+                <div id="prob-val" class="res-value" style="color: var(--medical-blue);">0%</div>
+                <div style="height: 8px; background: #eee; border-radius: 10px; margin-top: 15px; overflow: hidden;">
+                    <div id="prob-bar" style="height: 100%; width: 0%; background: var(--medical-blue); transition: 1s ease-out;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+	<!-- ============================= -->
+<!-- AI DOCTOR REPORT -->
+<!-- ============================= -->
+
+<div class="ai-doctor-panel" id="doctorPanel">
+
+    <div class="ai-title">
+        <i class="fa-solid fa-user-doctor"></i>
+        AI Clinical Assessment Report
+    </div>
+
+    <div class="remark-box" id="doctorRemark">
+
+        Patient condition appears stable based on submitted vitals.
+
+    </div>
+
+    <div class="ai-stamp">
+        VERIFIED BY AI DOCTOR
+    </div>
+
+    <div class="signature-box">
+
+        <div>
+            <div class="signature">
+                Dr. CareSense AI
+            </div>
+
+            <div class="signature-role">
+                Senior AI Clinical Intelligence System
+            </div>
+        </div>
+
+        <button class="download-btn" onclick="window.print()">
+            <i class="fa-solid fa-file-pdf"></i>
+            Download Report
+        </button>
+
+    </div>
+
+</div>
+<script>
+
+// ======================================
+// LOAD DASHBOARD ANALYTICS
+// ======================================
+
+// ======================================
+// LOAD DASHBOARD ANALYTICS (FIXED)
+// ======================================
+async function loadDashboard() {
+    try {
+        const response = await fetch("http://127.0.0.1:5000/dashboard?t=" + new Date().getTime());
+
+        if (!response.ok) {
+            throw new Error("Dashboard API Error");
+        }
+
+        const data = await response.json();
+
+        const totalElem = document.getElementById('totalPatients');
+        if(totalElem && data.total_patients !== undefined) {
+            totalElem.innerText = data.total_patients.toLocaleString();
+        }
+
+        console.log("Dashboard Updated:", data.total_patients);
+
+    } catch(error){
+        console.log("Dashboard Connection Failed:", error);
+    }
+}
+
+// SIRF YE EK CALL RAKHEIN (Baaki saaray window.onload aur listeners delete kar dain)
+window.onload = loadDashboard;
+
+// ======================================
+// MAIN AI ANALYSIS FUNCTION
+// ======================================
+
+async function analyzeData() {
+
+    const formInputs = document.querySelectorAll('#main-form input');
+
+    const error = document.getElementById('error-msg');
+    const results = document.getElementById('results-area');
+
+    const loader = document.getElementById('loader');
+    const btnText = document.getElementById('btn-text');
+
+    const button = document.querySelector('.predict-btn');
+
+    let valid = true;
+
+    // ======================================
+    // EMPTY VALIDATION
+    // ======================================
+
+    formInputs.forEach(input => {
+
+        if (!input.value.trim()) {
+
+            valid = false;
+            input.closest('.field').style.opacity = '0.7';
+
+        } else {
+
+            input.closest('.field').style.opacity = '1';
+
+        }
+
+    });
+
+    if (!valid) {
+
+        error.style.display = 'block';
+        error.innerText =
+            "Please fill all required fields correctly.";
+
+        return;
+    }
+
+    // ======================================
+    // GET FORM DATA
+    // ======================================
+
+    const data = {
+
+        Full_Patient_Name:
+            document.getElementById('pName').value,
+
+        Patient_ID:
+            document.getElementById('pID').value,
+
+        HR:
+            parseInt(document.getElementById('hr').value),
+
+        BP_Systolic:
+            parseInt(document.getElementById('bp_sys').value),
+
+        BP_Diastolic:
+            parseInt(document.getElementById('bp_dia').value),
+
+        Temp:
+            parseFloat(document.getElementById('temp').value),
+
+        SpO2:
+            parseInt(document.getElementById('oxy').value),
+
+        RR:
+            parseInt(document.getElementById('resp').value),
+
+        Age:
+            parseInt(document.getElementById('age').value),
+
+        Stay:
+            parseInt(document.getElementById('stay').value),
+
+        PrevAdm:
+            parseInt(document.getElementById('history').value)
+
+    };
+
+    try {
+
+        // ======================================
+        // VALIDATION
+        // ======================================
+
+        if (data.HR < 30 || data.HR > 200)
+            throw "Invalid Heart Rate";
+
+        if (data.SpO2 < 50 || data.SpO2 > 100)
+            throw "Invalid SpO2";
+
+        if (data.BP_Systolic < 70 || data.BP_Systolic > 200)
+            throw "Invalid Systolic BP";
+
+        if (data.BP_Diastolic < 40 || data.BP_Diastolic > 130)
+            throw "Invalid Diastolic BP";
+
+        if (isNaN(data.HR) || isNaN(data.SpO2))
+            throw "Invalid input";
+
+        // ======================================
+        // UI LOADING
+        // ======================================
+
+        error.style.display = 'none';
+
+        btnText.style.display = 'none';
+        loader.style.display = 'block';
+
+        results.style.display = 'none';
+
+        button.disabled = true;
+
+        // ======================================
+        // API CALL
+        // ======================================
+
+        const response = await fetch(
+            "http://127.0.0.1:5000/predict",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(data)
+            }
+        );
+
+        if (!response.ok) {
+            throw "Server Error";
+        }
+
+        const result = await response.json();
+
+        // ======================================
+        // UI BACK
+        // ======================================
+
+        loader.style.display = 'none';
+        btnText.style.display = 'block';
+
+        results.style.display = 'grid';
+
+        button.disabled = false;
+
+        // ======================================
+        // RISK MAPPING
+        // ======================================
+
+        const riskMap = [
+            "Low",
+            "Moderate",
+            "High"
+        ];
+
+        const riskColors = [
+            "#10b981",
+            "#f59e0b",
+            "#ef4444"
+        ];
+
+        const riskIndex = result.emergency;
+
+        const risk = riskMap[riskIndex];
+
+        const color = riskColors[riskIndex];
+
+        // ======================================
+        // EMERGENCY UI
+        // ======================================
+
+        document.getElementById('risk-val').innerText =
+            risk;
+
+        document.getElementById('risk-val').style.color =
+            color;
+
+        document.getElementById('risk-pill').innerText =
+            risk + " Alert Level";
+
+        document.getElementById('risk-pill').style.background =
+            color + "20";
+
+        document.getElementById('risk-pill').style.color =
+            color;
+
+        // ======================================
+        // ICU UI
+        // ======================================
+
+        const icuText =
+            result.icu === 1
+            ? "Required"
+            : "Not Required";
+
+        document.getElementById('icu-val').innerText =
+            icuText;
+
+        document.getElementById('icu-icon').innerHTML =
+            result.icu === 1
+            ? '<i class="fa-solid fa-triangle-exclamation" style="color:#ef4444"></i>'
+            : '<i class="fa-solid fa-circle-check" style="color:#10b981"></i>';
+
+        // ======================================
+        // READMISSION UI
+        // ======================================
+
+        const prob =
+            Math.round(result.readmission_prob);
+
+        document.getElementById('prob-val').innerText =
+            prob + "%";
+
+        document.getElementById('prob-bar').style.width =
+            prob + "%";
+
+        // ======================================
+        // AI DOCTOR PANEL
+        // ======================================
+
+        const doctorPanel =
+            document.getElementById('doctorPanel');
+
+        const doctorRemark =
+            document.getElementById('doctorRemark');
+
+        doctorPanel.style.display = "block";
+
+        let remark = "";
+
+        if (risk === "High") {
+
+            remark = `
+            Patient is showing critically abnormal clinical indicators.
+            Immediate medical supervision and rapid intervention are highly recommended.
+            ICU preparedness should be maintained due to elevated emergency risk.
+            `;
+
+        }
+
+        else if (risk === "Moderate") {
+
+            remark = `
+            Patient condition indicates moderate instability.
+            Continuous observation and follow-up assessments are advised to avoid complications.
+            `;
+
+        }
+
+        else {
+
+            remark = `
+            Patient vitals currently appear within manageable clinical ranges.
+            Maintain standard monitoring and routine observation protocols.
+            `;
+
+        }
+
+        // ICU EXTRA REMARK
+
+        if (result.icu === 1) {
+
+            remark += `
+            
+            AI analysis strongly recommends ICU admission based on current physiological indicators.
+            
+            `;
+
+        }
+
+        // READMISSION EXTRA REMARK
+
+        if (prob >= 70) {
+
+            remark += `
+            
+            High probability of future readmission detected.
+            Long-term monitoring and post-discharge planning are recommended.
+            
+            `;
+
+        }
+
+        doctorRemark.innerHTML = remark;
+
+        // ======================================
+        // REFRESH DASHBOARD
+        // ======================================
+
+        loadDashboard();
+
+    }
+
+    catch (err) {
+
+        loader.style.display = 'none';
+
+        btnText.style.display = 'block';
+
+        button.disabled = false;
+
+        error.style.display = 'block';
+
+        error.innerText = err;
+
+        console.error(err);
+
+    }
+
+}
+
+</script>
+</body>
+</html>
+
