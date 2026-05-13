@@ -7,23 +7,17 @@ import mysql.connector
 app = Flask(__name__)
 CORS(app)
 
-# =========================================
 # MYSQL CONNECTION
-# =========================================
-
 db = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="Qazi.siddiqui.9012",
-    database="caresense_ai"
+    password="Your Password Here",
+    database="Your Database Name Here"
 )
 
 print("MySQL Connected Successfully!")
 
-# =========================================
 # LOAD AI MODELS
-# =========================================
-
 try:
     emergency_model = joblib.load("emergency_model.joblib")
     icu_model = joblib.load("icu_model.joblib")
@@ -35,19 +29,14 @@ try:
 except Exception as e:
     print("Model Loading Error:", e)
 
-# =========================================
 # HOME ROUTE
-# =========================================
-
 @app.route('/')
 def home():
     return jsonify({
         "message": "CareSense AI Backend Running Successfully"
     })
 
-# =========================================
 # DASHBOARD ANALYTICS API
-# =========================================
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
     try:
@@ -69,10 +58,8 @@ def dashboard():
     except Exception as e:
         print("Dashboard API Error:", str(e))
         return jsonify({"error": str(e)}), 500
-# =========================================
+        
 # PREDICTION API
-# =========================================
-
 @app.route('/predict', methods=['POST'])
 def predict():
 
@@ -190,10 +177,7 @@ def predict():
             "error": str(e)
         }), 500
 
-# =========================================
 # SEARCH PATIENT
-# =========================================
-
 @app.route('/patient/<patient_id>', methods=['GET'])
 def get_patient(patient_id):
 
@@ -217,10 +201,7 @@ def get_patient(patient_id):
             "error": str(e)
         }), 500
 
-# =========================================
 # SERVER START
-# =========================================
-
 if __name__ == '__main__':
 
     app.run(
